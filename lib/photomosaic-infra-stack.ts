@@ -28,7 +28,9 @@ export class PhotomosaicInfraStack extends cdk.Stack {
           // Environment must have instance profile associated with it.
           value: 'aws-elasticbeanstalk-ec2-role',
         },
-      ].concat(this.getOptionsToAutoUpdatePlatform()),
+      ]
+          .concat(this.getOptionsToAutoUpdatePlatform())
+          .concat(this.getOptionsForLogStreaming()),
       solutionStackName: "64bit Amazon Linux 2 v3.3.3 running Python 3.8",
     });
 
@@ -62,5 +64,21 @@ export class PhotomosaicInfraStack extends cdk.Stack {
         value: 'minor',
       },
     ];
+  }
+
+  /**
+   * Note: not to be confused with health log streaming, which is another configuration. In the EB console, logs is under
+   * "Software" while health logs is under "Monitoring".
+   * Reference:
+   * https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-cloudwatchlogs
+   */
+  private getOptionsForLogStreaming() {
+    return [
+      {
+        namespace: 'aws:elasticbeanstalk:cloudwatch:logs',
+        optionName: 'StreamLogs',
+        value: 'true',
+      }
+    ]
   }
 }
