@@ -28,10 +28,39 @@ export class PhotomosaicInfraStack extends cdk.Stack {
           // Environment must have instance profile associated with it.
           value: 'aws-elasticbeanstalk-ec2-role',
         },
-      ],
+      ].concat(this.getOptionsToAutoUpdatePlatform()),
       solutionStackName: "64bit Amazon Linux 2 v3.3.3 running Python 3.8",
     });
 
     mosaicEnv.addDependsOn(mosaicApp)
+  }
+
+  /**
+   * Reference:
+   * https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkmanagedactions
+   */
+  private getOptionsToAutoUpdatePlatform() {
+    return [
+      {
+        namespace: 'aws:elasticbeanstalk:managedactions',
+        optionName: 'ManagedActionsEnabled',
+        value: 'true',
+      },
+      {
+        namespace: 'aws:elasticbeanstalk:managedactions',
+        optionName: 'PreferredStartTime',
+        value: 'Sun:00:00',
+      },
+      {
+        namespace: 'aws:elasticbeanstalk:managedactions',
+        optionName: 'ServiceRoleForManagedUpdates',
+        value: 'AWSServiceRoleForElasticBeanstalkManagedUpdates',
+      },
+      {
+        namespace: 'aws:elasticbeanstalk:managedactions:platformupdate',
+        optionName: 'UpdateLevel',
+        value: 'minor',
+      },
+    ];
   }
 }
