@@ -1,5 +1,6 @@
 import * as cdk from '@aws-cdk/core';
 import * as s3 from '@aws-cdk/aws-s3'
+import * as s3Assets from '@aws-cdk/aws-s3-assets'
 import * as elasticbeanstalk from '@aws-cdk/aws-elasticbeanstalk'
 
 // Reference:
@@ -11,6 +12,18 @@ export class PhotomosaicInfraStack extends cdk.Stack {
     const mosaicAppName = "MosaicApp";
     const mosaicApp = new elasticbeanstalk.CfnApplication(this, "mosaicApp", {
       applicationName: mosaicAppName,
+    });
+
+    const mosaicAsset = new s3Assets.Asset(this, 'MosaicAsset', {
+      path: `${__dirname}/../../heroku_simple_image_processing`,
+    });
+
+    const mosaicAppVersionProps = new elasticbeanstalk.CfnApplicationVersion(this, 'MosaicAppVersion', {
+      applicationName: mosaicAppName,
+      sourceBundle: {
+        s3Bucket: mosaicAsset.s3BucketName,
+        s3Key: mosaicAsset.s3ObjectKey,
+      }
     });
 
     // Taken from
@@ -32,6 +45,7 @@ export class PhotomosaicInfraStack extends cdk.Stack {
           .concat(this.getOptionsToAutoUpdatePlatform())
           .concat(this.getOptionsForLogStreaming()),
       solutionStackName: "64bit Amazon Linux 2 v3.3.3 running Python 3.8",
+      versionLabel: mosaicAppVersionProps.ref,
     });
 
     mosaicEnv.addDependsOn(mosaicApp)
