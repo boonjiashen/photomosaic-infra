@@ -11,7 +11,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 1. `cd` to this package
 1. Run:
     ```bash
-    cdk bootstrap  # because this package produces assets that go into the bootstrap S3 bucket
+    export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap  # Following # Following https://docs.aws.amazon.com/cdk/latest/guide/cdk_pipeline.html#cdk_pipeline_bootstrap
     cdk deploy
     ```
 1. Go to the URL of the Elasticbean stalk app, in the EB console.
