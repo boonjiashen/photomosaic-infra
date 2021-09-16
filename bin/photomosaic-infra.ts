@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'monocdk';
 import { PhotomosaicInfraStack } from '../lib/photomosaic-infra-stack';
-import { PhotomosaicPipelineStack } from '../lib/photomosaic-pipeline';
 
 const app = new cdk.App();
 new PhotomosaicInfraStack(app, 'PhotomosaicInfraStack', {
@@ -20,4 +19,3 @@ new PhotomosaicInfraStack(app, 'PhotomosaicInfraStack', {
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
-new PhotomosaicPipelineStack(app, 'PhotomosaicPipelineStack', {});
