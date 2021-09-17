@@ -15,7 +15,7 @@ export class PhotomosaicInfraStack extends cdk.Stack {
     });
 
     new s3deploy.BucketDeployment(this, 'deployStaticPage', {
-      sources: [s3deploy.Source.asset('./assets')],
+      sources: [s3deploy.Source.asset('./assets/client')],
       destinationBucket: siteBucket,
       retainOnDelete: false,
     });
@@ -23,8 +23,8 @@ export class PhotomosaicInfraStack extends cdk.Stack {
     new apig.LambdaRestApi(this, 'appApi', {
       handler: new lambda.Function(this, "app", {
         runtime: lambda.Runtime.NODEJS_14_X,
-        handler: "widgets.main",
-        code: lambda.Code.fromInline("not real code"),
+        handler: "index.handler",
+        code: lambda.Code.fromAsset("./assets/service/processor_lambda"),
       }),
     });
   }
