@@ -2,7 +2,10 @@ import * as cdk from 'monocdk';
 import * as s3 from 'monocdk/aws-s3';
 import * as s3deploy from 'monocdk/aws-s3-deployment';
 import * as lambda from 'monocdk/aws-lambda';
-import * as apig from 'monocdk/aws-apigateway';
+import * as lambda_python from 'monocdk/aws-lambda-python';
+
+import * as apig2 from 'monocdk/aws-apigatewayv2';
+import * as apig2_integrations from 'monocdk/aws-apigatewayv2-integrations';
 import * as iam from 'monocdk/aws-iam';
 
 export class PhotomosaicInfraStack extends cdk.Stack {
@@ -21,21 +24,28 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       retainOnDelete: false,
     });
 
-    const appFunction = new lambda.Function(this, "app", {
+    const appFunction = new lambda_python.PythonFunction(this, "app", {
       runtime: lambda.Runtime.PYTHON_3_9,
-      handler: "index.handler",
-      code: lambda.Code.fromAsset("./assets/service/processor_lambda"),
+      entry: "./assets/service/processor_lambda",
     });
     appFunction.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
     )
 
-    new apig.LambdaRestApi(this, 'appApi', {
-      handler: appFunction,
+    const appHttpApi = new apig2.HttpApi(this, "appHttpApi")
+    appHttpApi.addRoutes({
+      path: "/",
+      integration: new apig2_integrations.LambdaProxyIntegration({
+        handler: appFunction,
+      }),
     });
 
     new cdk.CfnOutput(this, "siteUrl", {
       value: siteBucket.bucketWebsiteUrl,
     });
+
+    new cdk.CfnOutput(this, "appHttpApiEndpoint", {
+      value: appHttpApi.url!,
+    })
   }
 }

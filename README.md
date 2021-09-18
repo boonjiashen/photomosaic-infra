@@ -1,21 +1,11 @@
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## What
+
+(Under construction) A webapp to do image processing on an uploaded image.
 
 ## Deployment
 
-1. Checkout this package and the photomosaic app under the same directory, like:
-    ```
-    IdeaProjects
-    ├── heroku_simple_image_processing
-    ├── photomosaic-infra
-    ```
-1. `cd` to this package
-1. Run:
-    ```bash
-    export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap  # Following # Following https://docs.aws.amazon.com/cdk/latest/guide/cdk_pipeline.html#cdk_pipeline_bootstrap
-    cdk deploy
-    ```
-1. Go to the URL of the Elasticbean stalk app, in the EB console.
-1. Verify that the webapp is running.
+1. `cdk deploy`
+1. Visit siteUrl given in stack output
 
 ## Useful commands
 
