@@ -1,1 +1,15 @@
-Under construction. Stay tuned
+<!DOCTYPE html>
+<html>
+    <body>
+        Under construction. Stay tuned
+        <script type="text/javascript">
+            fetch('https://jdkr8d9qs9.execute-api.ap-northeast-1.amazonaws.com/prod/', {
+                mode:"no-cors",
+            })
+            .then(response => {
+                document.body.innerHTML += response;
+                console.log(response);
+            });
+        </script>
+    </body>
+</html>
