@@ -3,6 +3,7 @@ import * as s3 from 'monocdk/aws-s3';
 import * as s3deploy from 'monocdk/aws-s3-deployment';
 import * as lambda from 'monocdk/aws-lambda';
 import * as apig from 'monocdk/aws-apigateway';
+import * as iam from 'monocdk/aws-iam';
 
 export class PhotomosaicInfraStack extends cdk.Stack {
 
@@ -20,16 +21,17 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       retainOnDelete: false,
     });
 
+    const appFunction = new lambda.Function(this, "app", {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      handler: "index.handler",
+      code: lambda.Code.fromAsset("./assets/service/processor_lambda"),
+    });
+    appFunction.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
+    )
+
     new apig.LambdaRestApi(this, 'appApi', {
-      // Might not be necessary
-      // defaultCorsPreflightOptions: {
-      //   allowOrigins: apig.Cors.ALL_ORIGINS,
-      // },
-      handler: new lambda.Function(this, "app", {
-        runtime: lambda.Runtime.PYTHON_3_9,
-        handler: "index.handler",
-        code: lambda.Code.fromAsset("./assets/service/processor_lambda"),
-      }),
+      handler: appFunction,
     });
 
     new cdk.CfnOutput(this, "siteUrl", {
