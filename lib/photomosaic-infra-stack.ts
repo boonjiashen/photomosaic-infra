@@ -21,9 +21,10 @@ export class PhotomosaicInfraStack extends cdk.Stack {
     });
 
     new apig.LambdaRestApi(this, 'appApi', {
-      // defaultCorsPreflightOptions: {
-      //   allowOrigins: apig.Cors.ALL_ORIGINS,
-      // },
+      // Might not be necessary
+      defaultCorsPreflightOptions: {
+        allowOrigins: apig.Cors.ALL_ORIGINS,
+      },
       handler: new lambda.Function(this, "app", {
         runtime: lambda.Runtime.NODEJS_14_X,
         handler: "index.handler",
