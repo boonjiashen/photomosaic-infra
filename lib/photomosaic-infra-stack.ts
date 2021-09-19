@@ -28,6 +28,7 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_9,
       entry: "./assets/service/processor_lambda",
       timeout: cdk.Duration.seconds(10),
+      memorySize: 1024,
     });
     appFunction.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")

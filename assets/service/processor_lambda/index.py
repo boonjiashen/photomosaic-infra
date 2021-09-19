@@ -5,13 +5,23 @@ from dataclasses import dataclass
 import io
 from PIL import Image
 import numpy as np
+import Mosaicker
 
 
 CONTENT_TYPE = "image/jpeg"
 FORMAT = "JPEG"
-
+max_dim = 500  # max dimension of both height and width of output image
+               # overly large input images will be shrunk
+mosaicker = Mosaicker.AppMosaicker(
+        'static/data_batch_1',
+        max_dim=max_dim,
+        )
 
 def handler(event, context):
+    input_im = get_image()
+    output_im = mosaicker.compute_mosaick(input_im)
+    body = base64.b64encode(img2bytes(output_im))
+
     return {
         "statusCode": 200,
         "headers": {
@@ -19,7 +29,7 @@ def handler(event, context):
             # To enable CORS
             "Access-Control-Allow-Origin": "*",
         },
-        "body": base64.b64encode(img2bytes(get_image())),
+        "body": body,
         # See https://stackoverflow.com/a/50670252
         "isBase64Encoded": True,
     }
@@ -62,7 +72,7 @@ def get_image():
 def main():
 
     img = get_image()
-    print(base64.b64encode(img2bytes(img)))
+    print(base64.b64encode(img2bytes(img))[:10])
 
 
 if __name__ == "__main__":
