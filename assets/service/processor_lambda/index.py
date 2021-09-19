@@ -2,32 +2,68 @@ from __future__ import annotations
 import boto3
 import base64
 from dataclasses import dataclass
+import io
+from PIL import Image
+import numpy as np
 
-s3 = boto3.client('s3')
+
+CONTENT_TYPE = "image/jpeg"
+FORMAT = "JPEG"
 
 
 def handler(event, context):
     return {
         "statusCode": 200,
         "headers": {
-            "Content-Type": "image/jpeg",
+            "Content-Type": CONTENT_TYPE,
             # To enable CORS
             "Access-Control-Allow-Origin": "*",
         },
-        "body": base64.b64encode(get_image()),
+        "body": base64.b64encode(img2bytes(get_image())),
         # See https://stackoverflow.com/a/50670252
         "isBase64Encoded": True,
     }
 
+
+def read_image_from_s3(bucket: str, key: str):
+    """Load image file from s3.
+
+    See: https://stackoverflow.com/a/56341457
+    """
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket)
+    object = bucket.Object(key)
+    response = object.get()
+    file_stream = response['Body']
+    im = Image.open(file_stream)
+    return np.array(im)
+
+
+def img2bytes(image) -> bytes:
+    """Converts a numpy image to bytes
+
+    See https://github.com/aws-samples/handling-binary-data-using-api-gateway-http-apis-blog/blob/2c744ddd6e3d9a46f4799b6f1cfe42af8d229a05/sam-code/img_api/app.py#L61
+    """
+    byte_stream = io.BytesIO()
+    Image.fromarray(image).save(byte_stream, format=FORMAT)
+    bytes = byte_stream.getvalue()
+    byte_stream.close()
+
+    return bytes
+
+
 def get_image():
-    bucket = "jiashenb-691456347435-ap-northeast-1"
-    key = "images/61fF0Qt14VL._AC_SL1000_.jpg"
-    
-    # See https://stackoverflow.com/a/42737249
-    return s3.get_object(Bucket=bucket, Key=key)['Body'].read()
+    bucket_str = "jiashenb-691456347435-ap-northeast-1"
+    key_str = "images/61fF0Qt14VL._AC_SL1000_.jpg"
+
+    return read_image_from_s3(bucket_str, key_str)
+
 
 def main():
-    print(base64.b64encode(get_image()))
+
+    img = get_image()
+    print(base64.b64encode(img2bytes(img)))
+
 
 if __name__ == "__main__":
     main()
