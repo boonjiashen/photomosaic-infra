@@ -64,7 +64,7 @@ def img2bytes(image) -> bytes:
 
 def get_image():
     bucket_str = "jiashenb-691456347435-ap-northeast-1"
-    key_str = "images/61fF0Qt14VL._AC_SL1000_.jpg"
+    key_str = "images/100pxl_me.jpeg"
 
     return read_image_from_s3(bucket_str, key_str)
 

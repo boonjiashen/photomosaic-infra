@@ -2,7 +2,6 @@ import * as cdk from 'monocdk';
 import * as s3 from 'monocdk/aws-s3';
 import * as s3deploy from 'monocdk/aws-s3-deployment';
 import * as lambda from 'monocdk/aws-lambda';
-import * as lambda_python from 'monocdk/aws-lambda-python';
 
 import * as apig2 from 'monocdk/aws-apigatewayv2';
 import * as apig2_integrations from 'monocdk/aws-apigatewayv2-integrations';
@@ -24,10 +23,9 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       retainOnDelete: false,
     });
 
-    const appFunction = new lambda_python.PythonFunction(this, "app", {
-      runtime: lambda.Runtime.PYTHON_3_9,
-      entry: "./assets/service/processor_lambda",
-      timeout: cdk.Duration.seconds(10),
+    const appFunction = new lambda.DockerImageFunction(this, "app", {
+      code: lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda"),
+      timeout: cdk.Duration.seconds(90),
       memorySize: 1024,
     });
     appFunction.role?.addManagedPolicy(
