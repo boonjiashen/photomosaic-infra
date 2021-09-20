@@ -7,6 +7,14 @@
 1. `cdk deploy`
 1. Visit siteUrl given in stack output
 
+Or using curl:
+
+```bash
+FILENAME=$( gmktemp --suffix .jpeg )  \
+&& curl -XPOST https://owtyai55r3.execute-api.ap-northeast-1.amazonaws.com/ --data-binary @"${HOME}/Documents/100pxl_dice.png" --output ${FILENAME}  \
+&& open ${FILENAME}
+```
+
 ## Local development
 
 ```bash
@@ -17,9 +25,11 @@ docker build -t photomosaicinfra assets/service/processor_lambda/  \
 --env AWS_DEFAULT_REGION=$(aws configure get region)  \
 photomosaicinfra  \
 && sleep 1  \
-&& curl -XPOST "http://localhost:8080/2015-03-31/functions/function/invocations" -d '{}' | jq -r '.body' | base64 --decode > foo.jpeg  \
-&& open foo.jpeg
+&& FILENAME=$( gmktemp --suffix .jpeg )  \
+&& curl -XPOST http://localhost:8080/2015-03-31/functions/function/invocations -d '{}' | jq -r '.body' | base64 --decode > ${FILENAME}  \
+&& open ${FILENAME}
 ```
+
 
 ## Useful commands
 

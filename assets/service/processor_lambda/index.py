@@ -6,6 +6,20 @@ import io
 from PIL import Image
 import numpy as np
 import Mosaicker
+import pprint
+from enum import Enum, auto
+
+
+class HttpVerb(Enum):
+    """Enumerates several HTTP verbs
+    """
+    GET = auto()
+    POST = auto()
+
+    @staticmethod
+    def of(verb: str) -> HttpVerb:
+        "Case-insensitive match of verb"
+        return next(x for x in HttpVerb if x.name.lower() == verb.lower())
 
 
 CONTENT_TYPE = "image/jpeg"
@@ -17,8 +31,27 @@ mosaicker = Mosaicker.AppMosaicker(
         max_dim=max_dim,
         )
 
-def handler(event, context):
-    input_im = get_image()
+
+def get_http_verb(event, default=HttpVerb.GET) -> HttpVerb:
+    """Get the HTTP verb of a HttpApi event
+
+    See https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html#http-api-develop-integrations-lambda.proxy-format
+    """
+    verb = event.get("requestContext", {}).get("http", {}).get("method", default.name)
+
+    return HttpVerb.of(verb)
+
+
+def handler(event: dict, context):
+    print(event)
+    verb = get_http_verb(event)
+    print(f"http verb = {verb}")
+
+    if verb == HttpVerb.POST:
+        img_bytes = base64.b64decode(event.get("body", ""))
+        input_im = bytes2img(img_bytes)
+    else:
+        input_im = get_default_image()
     output_im = mosaicker.compute_mosaick(input_im)
     body = base64.b64encode(img2bytes(output_im))
 
@@ -45,8 +78,9 @@ def read_image_from_s3(bucket: str, key: str):
     object = bucket.Object(key)
     response = object.get()
     file_stream = response['Body']
-    im = Image.open(file_stream)
-    return np.array(im)
+    im = np.array(Image.open(file_stream))
+
+    return im
 
 
 def img2bytes(image) -> bytes:
@@ -62,7 +96,19 @@ def img2bytes(image) -> bytes:
     return bytes
 
 
-def get_image():
+def bytes2img(img_bytes: bytes):
+    """Converts bytes into a numpy image
+
+    Use the Python base64 module to convert to base64 string to bytes
+    """
+    img_buffer = io.BytesIO(img_bytes)
+    image = np.array(Image.open(img_buffer))
+    img_buffer.close()
+
+    return image
+
+
+def get_default_image():
     bucket_str = "jiashenb-691456347435-ap-northeast-1"
     key_str = "images/900pxl_me.jpeg"
 
@@ -71,7 +117,7 @@ def get_image():
 
 def main():
 
-    img = get_image()
+    img = get_default_image()
     print(base64.b64encode(img2bytes(img))[:10])
 
 
