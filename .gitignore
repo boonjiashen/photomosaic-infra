@@ -3,6 +3,8 @@
 *.d.ts
 node_modules
 .idea
+.vscode
+**/__pycache__
 
 # CDK asset staging directory
 .cdk.staging
