@@ -1,7 +1,7 @@
 import scipy.spatial
 import numpy as np
 import util
-# import skimage.transform
+import skimage.transform
 
 
 def unpickle(filename):
@@ -135,7 +135,7 @@ class AppMosaicker(Mosaicker):
 
     def compute_mosaick(self, input_image):
         input_image = normalize(input_image)
-        # input_image = shrink_to_max_dim(input_image, self.max_dim)
+        input_image = shrink_to_max_dim(input_image, self.max_dim)
         input_image = crop_to_a_multiple(input_image, self.tile_size)
         output_image = Mosaicker.compute_mosaick(self, input_image)
 

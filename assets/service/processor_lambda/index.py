@@ -10,7 +10,7 @@ import Mosaicker
 
 CONTENT_TYPE = "image/jpeg"
 FORMAT = "JPEG"
-max_dim = 500  # max dimension of both height and width of output image
+max_dim = 100  # max dimension of both height and width of output image
                # overly large input images will be shrunk
 mosaicker = Mosaicker.AppMosaicker(
         'static/data_batch_1',
@@ -64,7 +64,7 @@ def img2bytes(image) -> bytes:
 
 def get_image():
     bucket_str = "jiashenb-691456347435-ap-northeast-1"
-    key_str = "images/100pxl_me.jpeg"
+    key_str = "images/900pxl_me.jpeg"
 
     return read_image_from_s3(bucket_str, key_str)
 
