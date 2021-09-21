@@ -6,6 +6,7 @@ import * as lambda from 'monocdk/aws-lambda';
 import * as apig2 from 'monocdk/aws-apigatewayv2';
 import * as apig2_integrations from 'monocdk/aws-apigatewayv2-integrations';
 import * as iam from 'monocdk/aws-iam';
+import * as logs from 'monocdk/aws-logs'
 
 export class PhotomosaicInfraStack extends cdk.Stack {
 
@@ -39,6 +40,24 @@ export class PhotomosaicInfraStack extends cdk.Stack {
         handler: appFunction,
       }),
     });
+
+    // https://github.com/aws/aws-cdk/issues/11100#issuecomment-782213423
+    const log = new logs.LogGroup(this, "appHttpApiLogGroup");
+    const logFormat = {
+      "requestId": "$context.requestId",
+      "ip": "$context.identity.sourceIp",
+      "requestTime": "$context.requestTime",
+      "httpMethod": "$context.httpMethod",
+      "routeKey": "$context.routeKey",
+      "status": "$context.status",
+      "protocol": "$context.protocol",
+      "responseLength": "$context.responseLength"
+    };
+    (appHttpApi.defaultStage?.node.defaultChild as apig2.CfnStage)
+      .accessLogSettings = {
+      destinationArn: log.logGroupArn,
+      format: JSON.stringify(logFormat),
+    };
 
     new cdk.CfnOutput(this, "siteUrl", {
       value: siteBucket.bucketWebsiteUrl,
