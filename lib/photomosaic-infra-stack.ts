@@ -41,6 +41,8 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       }),
     });
 
+    // HttpApi L2 construct doesn't support logging yet.
+    // Instructions on opening escape hatch in:
     // https://github.com/aws/aws-cdk/issues/11100#issuecomment-782213423
     const log = new logs.LogGroup(this, "appHttpApiLogGroup");
     const logFormat = {
@@ -51,7 +53,17 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       "routeKey": "$context.routeKey",
       "status": "$context.status",
       "protocol": "$context.protocol",
-      "responseLength": "$context.responseLength"
+      "responseLength": "$context.responseLength",
+      // Debug info for Lambda integration. See:
+      // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-troubleshooting-lambda.html
+      "integration": {
+        "error": "$context.integration.error",
+        "status": "$context.integration.status",
+      },
+      "error": {
+        "message": "$context.error.message",
+        "responseType": "$context.error.responseType",
+      }
     };
     (appHttpApi.defaultStage?.node.defaultChild as apig2.CfnStage)
       .accessLogSettings = {
