@@ -1,19 +1,43 @@
 <!DOCTYPE html>
-<html>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" integrity="sha512-Tn2m0TIpgVyTzzvmxLNuqbSJH3JP8jm+Cy3hvHrW7ndTDcJ1w5mBiksqDBb8GpE2ksktFvDB/ykZ0mDpsZj20w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <title>Photographic mosaic app</title>
+    </head>
     <body>
-        <img />
-        <p>Under construction.</p>
-        <input type="file" accept="image/png, image/jpeg"><br />
+        <div class="container">
+            <div class="header">
+              <h3>Get photomosaic of uploaded image</h3>
+            </div>
+            <input type="file" accept="image/png, image/jpeg"><br />
+            <div class="postprocess">
+                <div>
+                    Photomosaic:
+                </div>
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <img />
+            </div>
+            <div class="preprocess">
+                <div>
+                    Original image:
+                </div>
+                <img />
+            </div>
+        </div>
         <script type="text/javascript">
             function get_fetch_url() {
                 LOCAL_DOMAINS = ["localhost", "127.0.0.1"]
                 LOCAL_URL = "http://localhost:8080/2015-03-31/functions/function/invocations"
                 EXTERNAL_URL = "https://owtyai55r3.execute-api.ap-northeast-1.amazonaws.com/"
 
-                if (LOCAL_DOMAINS.includes(location.hostname)) {
-                    return LOCAL_URL;
-                }
+                // if (LOCAL_DOMAINS.includes(location.hostname)) {
+                //     return LOCAL_URL;
+                // }
                 return EXTERNAL_URL;
             }
             const fetch_url = get_fetch_url()
@@ -24,21 +48,22 @@
                 if (!this.files || !this.files[0]) {
                     return
                 }
-                var image = new Image();
-                var file = this.files[0]
-                image.src = URL.createObjectURL(file);
-                document.body.appendChild(image);
+                const file = this.files[0]
+                $('.preprocess img').attr('src', URL.createObjectURL(file));
+                $('.preprocess').show()
 
+                $('.postprocess img').hide()
+                $('.postprocess .loading').show()
+                $('.postprocess').show()
                 fetch(get_fetch_url(), {
                     method: 'POST',
                     body: file,
                 })
                 .then(response => response.blob())
                 .then(blob => {
-                    var image = new Image();
-                    image.src = URL.createObjectURL(blob);
-                    document.body.appendChild(image);
-                    console.log(blob)
+                    $('.postprocess .loading').hide()
+                    $('.postprocess img').attr('src', URL.createObjectURL(blob));
+                    $('.postprocess img').show()
                 });
             });
         </script>
