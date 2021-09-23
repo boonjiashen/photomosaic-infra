@@ -1,2 +1,2 @@
-* Add resizing back to Mosaicker so that runtime doesn't take so long
 * Refactor io.BytesIO with context manager and autoclose
+* How to call APIG locally from the client side? Maybe https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-cdk-getting-started.html

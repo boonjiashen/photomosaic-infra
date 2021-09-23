@@ -4,7 +4,7 @@
     <body>
         <img />
         <p>Under construction.</p>
-        <p>Fetched text is:</p>
+        <input type="file" accept="image/png, image/jpeg"><br />
         <script type="text/javascript">
             function get_fetch_url() {
                 LOCAL_DOMAINS = ["localhost", "127.0.0.1"]
@@ -19,13 +19,27 @@
             const fetch_url = get_fetch_url()
             console.log("fetch_url = ", fetch_url)
 
-            fetch(fetch_url)
-            .then(response => response.blob())
-            .then(blob => {
+            // To add image to DOM, see https://stackoverflow.com/a/45931408
+            document.querySelector('input[type="file"]').addEventListener('change', function() {
+                if (!this.files || !this.files[0]) {
+                    return
+                }
                 var image = new Image();
-                image.src = URL.createObjectURL(blob);
+                var file = this.files[0]
+                image.src = URL.createObjectURL(file);
                 document.body.appendChild(image);
-                console.log(blob)
+
+                fetch(get_fetch_url(), {
+                    method: 'POST',
+                    body: file,
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    var image = new Image();
+                    image.src = URL.createObjectURL(blob);
+                    document.body.appendChild(image);
+                    console.log(blob)
+                });
             });
         </script>
     </body>

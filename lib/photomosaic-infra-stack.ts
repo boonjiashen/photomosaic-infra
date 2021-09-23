@@ -33,7 +33,17 @@ export class PhotomosaicInfraStack extends cdk.Stack {
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
     )
 
-    const appHttpApi = new apig2.HttpApi(this, "appHttpApi")
+    const appHttpApi = new apig2.HttpApi(this, "appHttpApi", {
+      corsPreflight: {
+        // allowMethods and allowOrigins to avoid this browser error during preflight
+        // `No 'Access-Control-Allow-Origin' header is present on the requested resource.`
+        allowMethods: [apig2.CorsHttpMethod.ANY],
+        allowOrigins: ["*"],
+        // allowHeaders to avoid this browser error during preflight
+        // `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
+        allowHeaders: ['*'],
+      }
+    });
     appHttpApi.addRoutes({
       path: "/",
       integration: new apig2_integrations.LambdaProxyIntegration({

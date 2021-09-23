@@ -14,6 +14,7 @@ class HttpVerb(Enum):
     """Enumerates several HTTP verbs
     """
     GET = auto()
+    OPTIONS = auto()
     POST = auto()
 
     @staticmethod
