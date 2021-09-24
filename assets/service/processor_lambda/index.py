@@ -6,21 +6,9 @@ import io
 from PIL import Image, ImageOps
 import numpy as np
 import Mosaicker
+from S3Uri import S3Uri
+from HttpVerb import HttpVerb
 import pprint
-from enum import Enum, auto
-
-
-class HttpVerb(Enum):
-    """Enumerates several HTTP verbs
-    """
-    GET = auto()
-    OPTIONS = auto()
-    POST = auto()
-
-    @staticmethod
-    def of(verb: str) -> HttpVerb:
-        "Case-insensitive match of verb"
-        return next(x for x in HttpVerb if x.name.lower() == verb.lower())
 
 
 CONTENT_TYPE = "image/jpeg"
@@ -68,21 +56,21 @@ def handler(event: dict, context):
         "isBase64Encoded": True,
     }
 
-def read_bytes_from_s3(bucket: str, key: str) -> bytes:
+def read_bytes_from_s3(s3uri: S3Uri) -> bytes:
     # See https://stackoverflow.com/a/35376156
 
     s3 = boto3.resource('s3')
-    obj = s3.Object(bucket, key)
+    obj = s3.Object(s3uri.bucket, s3uri.key)
 
     return obj.get()['Body'].read()
 
 
-def read_image_from_s3(bucket: str, key: str) -> np.ndarray:
+def read_image_from_s3(img_uri: S3Uri) -> np.ndarray:
     """Load image file from s3.
 
     See: https://stackoverflow.com/a/56341457
     """
-    im_bytes = read_bytes_from_s3(bucket, key)
+    im_bytes = read_bytes_from_s3(img_uri)
 
     return bytes2img(im_bytes)
 
@@ -115,13 +103,13 @@ def bytes2img(img_bytes: bytes):
 
 
 def get_default_image():
-    bucket_str = "jiashenb-691456347435-ap-northeast-1"
-    key_str = "images/900pxl_me.jpeg"
+    s3uri = S3Uri.from_string("s3://jiashenb-691456347435-ap-northeast-1/images/900pxl_me.jpeg")
 
-    return read_image_from_s3(bucket_str, key_str)
+    return read_image_from_s3(s3uri)
 
 
 def main():
+
     import matplotlib.pyplot as plt
 
     input_im = get_default_image()
