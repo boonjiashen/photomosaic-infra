@@ -3,7 +3,7 @@ import boto3
 import base64
 from dataclasses import dataclass
 import io
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import Mosaicker
 import pprint
@@ -68,20 +68,23 @@ def handler(event: dict, context):
         "isBase64Encoded": True,
     }
 
+def read_bytes_from_s3(bucket: str, key: str) -> bytes:
+    # See https://stackoverflow.com/a/35376156
 
-def read_image_from_s3(bucket: str, key: str):
+    s3 = boto3.resource('s3')
+    obj = s3.Object(bucket, key)
+
+    return obj.get()['Body'].read()
+
+
+def read_image_from_s3(bucket: str, key: str) -> np.ndarray:
     """Load image file from s3.
 
     See: https://stackoverflow.com/a/56341457
     """
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket(bucket)
-    object = bucket.Object(key)
-    response = object.get()
-    file_stream = response['Body']
-    im = np.array(Image.open(file_stream))
+    im_bytes = read_bytes_from_s3(bucket, key)
 
-    return im
+    return bytes2img(im_bytes)
 
 
 def img2bytes(image) -> bytes:
@@ -103,7 +106,9 @@ def bytes2img(img_bytes: bytes):
     Use the Python base64 module to convert to base64 string to bytes
     """
     img_buffer = io.BytesIO(img_bytes)
-    image = np.array(Image.open(img_buffer))
+    pil_im = Image.open(img_buffer)
+    pil_im = ImageOps.exif_transpose(pil_im)
+    image = np.array(pil_im)
     img_buffer.close()
 
     return image
@@ -117,7 +122,7 @@ def get_default_image():
 
 
 def main():
-    # import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
     input_im = get_default_image()
     output_im = mosaicker.compute_mosaick(input_im)
@@ -126,9 +131,9 @@ def main():
     # print(base64.b64encode(img2bytes(img))[:10])
     print(input_im.shape)
     print(output_im.shape)
-    # plt.figure()
-    # plt.imshow(img)
-    # plt.show()
+    plt.figure()
+    plt.imshow(output_im)
+    plt.show()
 
 
 if __name__ == "__main__":
