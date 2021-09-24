@@ -1,6 +1,6 @@
 numpy>=1.9.2
 # Pillow for byte-to-image conversation and vice versa
 Pillow>=3.1.1
-scipy>=0.15.1
+scipy>=1.6.0
 # scikit-image for image scaling
 scikit-image>=0.18.2

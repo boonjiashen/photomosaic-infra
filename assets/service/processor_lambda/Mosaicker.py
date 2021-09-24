@@ -49,7 +49,10 @@ class Mosaicker(object):
                 ))
         Y = np.vstack(window.flatten() for window in windows)
 
-        _, neighbor_inds = self.tree.query(Y)
+        query_kwargs = {
+            "workers": -1,  # use all CPU threads
+        }
+        _, neighbor_inds = self.tree.query(Y, **query_kwargs)
 
         im_output = im_input
         for neighbor_ind, slices in zip(neighbor_inds, slice_tuples):

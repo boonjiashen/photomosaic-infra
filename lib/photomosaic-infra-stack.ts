@@ -27,7 +27,7 @@ export class PhotomosaicInfraStack extends cdk.Stack {
     const appFunction = new lambda.DockerImageFunction(this, "app", {
       code: lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda"),
       timeout: cdk.Duration.seconds(90),
-      memorySize: 1024,
+      memorySize: 10240,
     });
     appFunction.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")

@@ -25,7 +25,7 @@ class HttpVerb(Enum):
 
 CONTENT_TYPE = "image/jpeg"
 FORMAT = "JPEG"
-max_dim = 100  # max dimension of both height and width of output image
+max_dim = 500  # max dimension of both height and width of output image
                # overly large input images will be shrunk
 mosaicker = Mosaicker.AppMosaicker(
         'static/data_batch_1',
@@ -117,9 +117,18 @@ def get_default_image():
 
 
 def main():
+    # import matplotlib.pyplot as plt
 
-    img = get_default_image()
-    print(base64.b64encode(img2bytes(img))[:10])
+    input_im = get_default_image()
+    output_im = mosaicker.compute_mosaick(input_im)
+    body = base64.b64encode(img2bytes(output_im))
+
+    # print(base64.b64encode(img2bytes(img))[:10])
+    print(input_im.shape)
+    print(output_im.shape)
+    # plt.figure()
+    # plt.imshow(img)
+    # plt.show()
 
 
 if __name__ == "__main__":
