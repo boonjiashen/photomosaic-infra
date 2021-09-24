@@ -32,9 +32,7 @@ def get_http_verb(event, default=HttpVerb.GET) -> HttpVerb:
 
 
 def handler(event: dict, context):
-    print(event)
     verb = get_http_verb(event)
-    print(f"http verb = {verb}")
 
     if verb == HttpVerb.POST:
         img_bytes = base64.b64decode(event.get("body", ""))
