@@ -33,7 +33,9 @@
             function get_fetch_url() {
                 LOCAL_DOMAINS = ["localhost", "127.0.0.1"]
                 LOCAL_URL = "http://localhost:8080/2015-03-31/functions/function/invocations"
-                EXTERNAL_URL = "https://owtyai55r3.execute-api.ap-northeast-1.amazonaws.com/"
+                prod_url = "https://xnxovyzry3.execute-api.ap-northeast-1.amazonaws.com/"
+                devo_url = "https://kn6zf5cb1j.execute-api.ap-northeast-1.amazonaws.com/"
+                EXTERNAL_URL = prod_url
 
                 // if (LOCAL_DOMAINS.includes(location.hostname)) {
                 //     return LOCAL_URL;
