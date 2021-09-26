@@ -1,6 +1,11 @@
 ## What
 
-(Under construction) A webapp to do image processing on an uploaded image.
+A webapp to do image processing on an uploaded image. The web assets are served over S3 while the image processing is handled by a Lambda function.
+
+The current endpoints are
+
+* https://mosaic.boonjiashen.com for prod
+* https://mosaic.dev.boonjiashen.com for beta.
 
 ## Deployment
 
