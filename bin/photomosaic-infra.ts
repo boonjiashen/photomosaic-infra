@@ -8,24 +8,24 @@ const app = new cdk.App();
 const commonStackProps: cdk.StackProps = {
   env: {
     // Cannot use an S3 record alias in region-agnostic stack
-    region: 'ap-northeast-1',
+    region: 'us-east-1',
   },
 }
 
-new InfraStack(app, 'devo', {
+new InfraStack(app, 'beta', {
   hostedZoneAttr: {
-    hostedZoneId: "Z05586802LBP65122KD61",
-    zoneName: "dev.boonjiashen.com",
+    hostedZoneId: "Z063915120I77LJYUUWXL",
+    zoneName:"dev.boonjiashen.com"
   },
-  stackName: 'photomosaicDevo',
+  stackName: 'betaPhotomosaic',
   ...commonStackProps,
 });
 
 new InfraStack(app, 'prod', {
   hostedZoneAttr: {
-    hostedZoneId: "Z09544292C54AJ4VKFFSY",
-    zoneName: "boonjiashen.com",
+    hostedZoneId: "Z06487043KJ2AQH7M5LXK",
+    zoneName: "boonjiashen.com"
   },
-  stackName: 'photomosaicProd',
+  stackName: 'prodPhotomosaic',
   ...commonStackProps,
 });
