@@ -73,12 +73,14 @@ export class InfraStack extends cdk.Stack {
       code: lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda"),
       timeout: cdk.Duration.seconds(90),
       memorySize: 10240,
+      tracing: lambda.Tracing.ACTIVE,
     });
     appFunction.role?.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
     )
 
     const appHttpApi = new apig2.HttpApi(this, "appHttpApi", {
+      description: `API for ${props.stackName}`,
       corsPreflight: {
         // allowMethods and allowOrigins to avoid this browser error during preflight
         // `No 'Access-Control-Allow-Origin' header is present on the requested resource.`
