@@ -15,7 +15,10 @@
             <input type="file" accept="image/png, image/jpeg"><br />
             <div class="postprocess">
                 <div>
-                    Photomosaic:
+                    <h4>Photomosaic:</h4>
+                </div>
+                <div class="error">
+                    Error processing message. Try again later.
                 </div>
                 <div class="loading">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -24,7 +27,7 @@
             </div>
             <div class="preprocess">
                 <div>
-                    Original image:
+                    <h4>Original image:</h4>
                 </div>
                 <img />
             </div>
@@ -43,7 +46,7 @@
                 return EXTERNAL_URL;
             }
             const fetch_url = get_fetch_url()
-            console.log("fetch_url = ", fetch_url)
+            console.debug("fetch_url = ", fetch_url)
 
             // To add image to DOM, see https://stackoverflow.com/a/45931408
             document.querySelector('input[type="file"]').addEventListener('change', function() {
@@ -54,18 +57,30 @@
                 $('.preprocess img').attr('src', URL.createObjectURL(file));
                 $('.preprocess').show()
 
-                $('.postprocess img').hide()
+                $('.postprocess img,error').hide()
                 $('.postprocess .loading').show()
                 $('.postprocess').show()
+
                 fetch(get_fetch_url(), {
                     method: 'POST',
                     body: file,
                 })
-                .then(response => response.blob())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.blob()
+                })
                 .then(blob => {
-                    $('.postprocess .loading').hide()
                     $('.postprocess img').attr('src', URL.createObjectURL(blob));
                     $('.postprocess img').show()
+                })
+                .catch(error => {
+                    console.error(error);
+                    $('.postprocess .error').show()
+                })
+                .finally(() => {
+                    $('.postprocess .loading').hide()
                 });
             });
         </script>

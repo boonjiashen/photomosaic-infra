@@ -1,6 +1,13 @@
 .preprocess,
-.postprocess {
+.postprocess,
+.postprocess .error
+{
     display: none;
+}
+
+.error
+{
+    color: red;
 }
 
 img {
