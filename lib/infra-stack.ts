@@ -55,6 +55,7 @@ export class InfraStack extends cdk.Stack {
       defaultBehavior: {
         origin: new cf_origins.S3Origin(siteBucket),
         viewerProtocolPolicy: cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cf.CachePolicy.CACHING_DISABLED,
       },
       certificate: siteCertificate,
       domainNames: [siteDomainName],
