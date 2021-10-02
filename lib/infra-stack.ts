@@ -77,6 +77,10 @@ export class InfraStack extends cdk.Stack {
       api: appHttpApi,
       domainName: apiCustomDomainName,
     })
+    // Need to add explicit dependency, otherwise deployment fails, perhaps because CFN
+    // tries to create the mapping before the custom domain name
+    // See https://stackoverflow.com/a/51307661
+    .node.addDependency(apiCustomDomainName);
     const siteRecord = new cdk.aws_route53.ARecord(this, 'siteRecord', {
       zone: hostedZone,
       recordName: siteDomainPrefix,
