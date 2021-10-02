@@ -32,30 +32,6 @@ export class InfraStack extends cdk.Stack {
       retainOnDelete: false,
     });
 
-    const siteCertificate = new cdk.aws_certificatemanager.DnsValidatedCertificate(this, 'siteCertificate', {
-      domainName: siteDomainName,
-      hostedZone,
-    });
-
-    const siteDistribution = new cdk.aws_cloudfront.Distribution(this, 'siteDistribution', {
-      defaultBehavior: {
-        origin: new cdk.aws_cloudfront_origins.S3Origin(siteBucket),
-        viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cdk.aws_cloudfront.CachePolicy.CACHING_DISABLED,
-      },
-      certificate: siteCertificate,
-      domainNames: [siteDomainName],
-      defaultRootObject: websiteRootDoc,
-    });
-
-    const siteRecord = new cdk.aws_route53.ARecord(this, 'siteRecord', {
-      zone: hostedZone,
-      recordName: siteDomainPrefix,
-      target: cdk.aws_route53.RecordTarget.fromAlias(
-        new cdk.aws_route53_targets.CloudFrontTarget(siteDistribution),
-      ),
-    });
-
     const appFunction = new cdk.aws_lambda.DockerImageFunction(this, "app", {
       code: cdk.aws_lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda"),
       timeout: cdk.Duration.seconds(90),
@@ -76,15 +52,51 @@ export class InfraStack extends cdk.Stack {
         // allowHeaders to avoid this browser error during preflight
         // `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
         allowHeaders: ['*'],
-      }
+      },
+      defaultIntegration: new cdk.aws_apigatewayv2_integrations.HttpProxyIntegration({
+        url: siteBucket.bucketWebsiteUrl,
+      }),
     });
     appHttpApi.addRoutes({
-      path: "/",
+      path: "/process",
       integration: new cdk.aws_apigatewayv2_integrations.LambdaProxyIntegration({
         handler: appFunction,
       }),
     });
+    this.enableLoggingInHttpApi(appHttpApi);
 
+    // Route customer-facing domain to APIG endpoint
+    const apiCustomDomainName = new cdk.aws_apigatewayv2.DomainName(this, "apiCustomDomainName", {
+      domainName: siteDomainName,
+      certificate: new cdk.aws_certificatemanager.DnsValidatedCertificate(this, 'siteCertificate', {
+        domainName: siteDomainName,
+        hostedZone,
+      }),
+    });
+    new cdk.aws_apigatewayv2.ApiMapping(this, 'apiMapping', {
+      api: appHttpApi,
+      domainName: apiCustomDomainName,
+    })
+    const siteRecord = new cdk.aws_route53.ARecord(this, 'siteRecord', {
+      zone: hostedZone,
+      recordName: siteDomainPrefix,
+      target: cdk.aws_route53.RecordTarget.fromAlias(
+        new cdk.aws_route53_targets.ApiGatewayv2DomainProperties(
+          apiCustomDomainName.regionalDomainName, apiCustomDomainName.regionalHostedZoneId,
+        ),
+      ),
+    });
+
+    new cdk.CfnOutput(this, "siteUrl", {
+      value: `https://${siteRecord.domainName}`,
+    });
+
+    new cdk.CfnOutput(this, "appHttpApiEndpoint", {
+      value: appHttpApi.url!,
+    })
+  }
+
+  private enableLoggingInHttpApi(api: cdk.aws_apigatewayv2.HttpApi) {
     // HttpApi L2 construct doesn't support logging yet.
     // Instructions on opening escape hatch in:
     // https://github.com/aws/aws-cdk/issues/11100#issuecomment-782213423
@@ -109,18 +121,10 @@ export class InfraStack extends cdk.Stack {
         "responseType": "$context.error.responseType",
       }
     };
-    (appHttpApi.defaultStage?.node.defaultChild as cdk.aws_apigatewayv2.CfnStage)
+    (api.defaultStage?.node.defaultChild as cdk.aws_apigatewayv2.CfnStage)
       .accessLogSettings = {
       destinationArn: log.logGroupArn,
       format: JSON.stringify(logFormat),
     };
-
-    new cdk.CfnOutput(this, "siteUrl", {
-      value: `https://${siteRecord.domainName}`,
-    });
-
-    new cdk.CfnOutput(this, "appHttpApiEndpoint", {
-      value: appHttpApi.url!,
-    })
   }
 }
