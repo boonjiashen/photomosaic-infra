@@ -1,4 +1,5 @@
-import * as cdk from 'monocdk';
+import * as cdk from 'aws-cdk-lib';
+import {Construct} from "constructs";
 
 interface InfraStackProps extends cdk.StackProps {
   hostedZoneAttr: cdk.aws_route53.HostedZoneAttributes
@@ -6,7 +7,7 @@ interface InfraStackProps extends cdk.StackProps {
 
 export class InfraStack extends cdk.Stack {
 
-  constructor(scope: cdk.Construct, id: string, props: InfraStackProps) {
+  constructor(scope: Construct, id: string, props: InfraStackProps) {
     super(scope, id, props);
 
     // If you need to the hostname from the HostedZone object we need to use
@@ -22,6 +23,12 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true, // deletes bucket even if non-empty
       versioned: true,
       publicReadAccess: true,
+      blockPublicAccess: {
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      },
       // Also enables static website hosting
       websiteIndexDocument: websiteRootDoc,
     });
@@ -33,7 +40,9 @@ export class InfraStack extends cdk.Stack {
     });
 
     const appFunction = new cdk.aws_lambda.DockerImageFunction(this, "app", {
-      code: cdk.aws_lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda"),
+      code: cdk.aws_lambda.DockerImageCode.fromImageAsset("./assets/service/processor_lambda", {
+        platform: cdk.aws_ecr_assets.Platform.LINUX_AMD64,
+      }),
       timeout: cdk.Duration.seconds(90),
       memorySize: 10240,
       tracing: cdk.aws_lambda.Tracing.ACTIVE,
@@ -53,15 +62,17 @@ export class InfraStack extends cdk.Stack {
         // `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
         allowHeaders: ['*'],
       },
-      defaultIntegration: new cdk.aws_apigatewayv2_integrations.HttpProxyIntegration({
-        url: siteBucket.bucketWebsiteUrl,
-      }),
+      defaultIntegration: new cdk.aws_apigatewayv2_integrations.HttpUrlIntegration(
+          "UrlIntegration",
+          siteBucket.bucketWebsiteUrl
+      ),
     });
     appHttpApi.addRoutes({
       path: "/process",
-      integration: new cdk.aws_apigatewayv2_integrations.LambdaProxyIntegration({
-        handler: appFunction,
-      }),
+      integration: new cdk.aws_apigatewayv2_integrations.HttpLambdaIntegration(
+        "LambdaIntegration",
+        appFunction,
+      ),
     });
     this.enableLoggingInHttpApi(appHttpApi);
 

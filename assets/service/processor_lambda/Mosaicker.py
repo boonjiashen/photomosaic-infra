@@ -27,7 +27,7 @@ class Mosaicker(object):
         assert(n_channels == 3)
         assert(candidates.shape[0] == candidates.shape[1])
 
-        self.X = np.vstack(candidates[:,:,:,i].flatten() for i in range(self.n))
+        self.X = np.vstack([candidates[:,:,:,i].flatten() for i in range(self.n)])
         self.tree = scipy.spatial.cKDTree(self.X)
 
     def compute_mosaick(self, im_input):
@@ -47,7 +47,7 @@ class Mosaicker(object):
                 (self.tile_size, self.tile_size),
                 (self.tile_size, self.tile_size),
                 ))
-        Y = np.vstack(window.flatten() for window in windows)
+        Y = np.vstack([window.flatten() for window in windows])
 
         query_kwargs = {
             "workers": -1,  # use all CPU threads
