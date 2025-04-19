@@ -9,6 +9,7 @@ The current endpoints are
 
 ## Deployment
 
+1. `npm install`
 1. `cdk deploy`
 1. Visit siteUrl given in stack output
 
